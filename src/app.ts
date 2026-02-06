@@ -235,7 +235,7 @@ export class App {
       this.render();
       this.renderOverlay();
       this.updateProgress();
-      this.updateParamsDisplay(params, sample.name);
+      this.updateParamsDisplay(params, sample.name, this.model.patternCount);
       this.modelStarted = false;  // Model ready but not yet running
       this.updateStatus(`Loaded ${sample.name} - ${this.model.patternCount} patterns extracted`);
     } catch (err) {
@@ -447,7 +447,7 @@ export class App {
     }
   }
 
-  private updateParamsDisplay(params: ReturnType<typeof this.getUIParams>, sampleName: string): void {
+  private updateParamsDisplay(params: ReturnType<typeof this.getUIParams>, sampleName: string, patternCount?: number): void {
     const el = this.ui.paramsDisplay();
     if (!el) return;
 
@@ -456,7 +456,7 @@ export class App {
       return `<span><span class="param-label">${label}:</span><span class="param-value">${v}</span></span>`;
     };
 
-    el.innerHTML = [
+    const items = [
       p('sample', sampleName),
       p('size', `${params.width}x${params.height}`),
       p('N', params.patternSize),
@@ -466,6 +466,10 @@ export class App {
       p('ground', params.ground),
       p('heur', params.heuristic),
       p('seed', params.seed),
-    ].join('');
+    ];
+    if (patternCount !== undefined) {
+      items.push(p('patterns', patternCount));
+    }
+    el.innerHTML = items.join('');
   }
 }
