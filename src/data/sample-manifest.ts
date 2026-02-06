@@ -22,6 +22,8 @@ export interface TilesetManifest {
   name: string;
   folder: string;
   subsets?: string[];
+  size?: number;          // Suggested grid size in tiles (default 10)
+  periodic?: boolean;     // Whether output wraps (default false)
   description?: string;
 }
 

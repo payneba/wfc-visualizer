@@ -70,6 +70,17 @@ export interface SimpleTiledOptions extends WFCOptions {
   blackBackground: boolean;
 }
 
+/** Common model interface satisfied by both OverlappingModel and SimpleTiledModel */
+export interface WFCModel {
+  step(): ObserveResult;
+  run(maxSteps?: number): boolean;
+  render(buffer: Uint32Array): void;
+  getState(): WFCState;
+  getEntropyData(): { entropy: number; remaining: number; collapsed: boolean }[];
+  clear(): void;
+  readonly patternCount: number;
+}
+
 /** Current state of the WFC algorithm */
 export interface WFCState {
   totalCells: number;
