@@ -75,6 +75,19 @@ export class App {
       }
     });
 
+    // Pattern extraction settings - reload model when changed
+    const reloadOnChange = () => {
+      if (this.currentSample) {
+        this.loadCurrentSample().then(() => {
+          // Refresh patterns modal if open
+          this.refreshPatternsModalIfOpen();
+        });
+      }
+    };
+    this.ui.patternSize().addEventListener('change', reloadOnChange);
+    this.ui.symmetry().addEventListener('change', reloadOnChange);
+    this.ui.periodicInput().addEventListener('change', reloadOnChange);
+
     // Visualization toggles
     const entropyCheckbox = document.getElementById('show-entropy') as HTMLInputElement;
     entropyCheckbox?.addEventListener('change', () => {
@@ -552,6 +565,13 @@ export class App {
     const modal = document.getElementById('patterns-modal');
     if (modal) {
       modal.classList.add('hidden');
+    }
+  }
+
+  private refreshPatternsModalIfOpen(): void {
+    const modal = document.getElementById('patterns-modal');
+    if (modal && !modal.classList.contains('hidden')) {
+      this.showPatternsModal();
     }
   }
 }
