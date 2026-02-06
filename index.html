@@ -18,36 +18,77 @@
           <h2>Samples</h2>
           <select id="model-type">
             <option value="overlapping">Overlapping Model</option>
-            <option value="simpletiled">Simple Tiled Model</option>
+            <option value="simpletiled" disabled>Simple Tiled Model</option>
           </select>
           <select id="sample-select"></select>
+          <p id="sample-description" class="description"></p>
         </section>
 
         <section id="settings">
-          <h2>Settings</h2>
-          <div class="setting">
-            <label for="width">Width:</label>
-            <input type="number" id="width" value="48" min="8" max="128">
-          </div>
-          <div class="setting">
-            <label for="height">Height:</label>
-            <input type="number" id="height" value="48" min="8" max="128">
-          </div>
-          <div class="setting">
-            <label for="pattern-size">N (pattern size):</label>
-            <input type="number" id="pattern-size" value="3" min="2" max="5">
-          </div>
-          <div class="setting">
-            <label for="periodic">
-              <input type="checkbox" id="periodic" checked>
-              Periodic
-            </label>
-          </div>
-          <div class="setting">
-            <label for="seed">Seed:</label>
-            <input type="number" id="seed" value="0">
-            <button id="random-seed">Random</button>
-          </div>
+          <h2>Settings <button id="reset-defaults" class="small-btn">Reset to Defaults</button></h2>
+
+          <fieldset>
+            <legend>Output</legend>
+            <div class="setting">
+              <label for="width">Width:</label>
+              <input type="number" id="width" value="48" min="8" max="128">
+            </div>
+            <div class="setting">
+              <label for="height">Height:</label>
+              <input type="number" id="height" value="48" min="8" max="128">
+            </div>
+            <div class="setting">
+              <label for="periodic">
+                <input type="checkbox" id="periodic">
+                Periodic Output
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Pattern Extraction</legend>
+            <div class="setting">
+              <label for="pattern-size">N (pattern size):</label>
+              <input type="number" id="pattern-size" value="3" min="2" max="5">
+            </div>
+            <div class="setting">
+              <label for="symmetry">Symmetry:</label>
+              <select id="symmetry">
+                <option value="1">1 (none)</option>
+                <option value="2">2 (reflect)</option>
+                <option value="8" selected>8 (all)</option>
+              </select>
+            </div>
+            <div class="setting">
+              <label for="periodic-input">
+                <input type="checkbox" id="periodic-input" checked>
+                Periodic Input
+              </label>
+            </div>
+            <div class="setting">
+              <label for="ground">
+                <input type="checkbox" id="ground">
+                Ground Constraint
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Algorithm</legend>
+            <div class="setting">
+              <label for="heuristic">Heuristic:</label>
+              <select id="heuristic">
+                <option value="entropy" selected>Entropy</option>
+                <option value="mrv">MRV (Min Remaining Values)</option>
+                <option value="scanline">Scanline</option>
+              </select>
+            </div>
+            <div class="setting">
+              <label for="seed">Seed:</label>
+              <input type="number" id="seed" value="0">
+              <button id="random-seed" class="small-btn">Random</button>
+            </div>
+          </fieldset>
         </section>
 
         <section id="visualization-options">
@@ -60,7 +101,7 @@
           </div>
           <div class="setting">
             <label for="show-propagation">
-              <input type="checkbox" id="show-propagation" checked>
+              <input type="checkbox" id="show-propagation">
               Show Propagation
             </label>
           </div>

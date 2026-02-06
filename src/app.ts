@@ -1,5 +1,5 @@
 import { OverlappingModel } from './core/overlapping-model';
-import { OVERLAPPING_SAMPLES } from './data/sample-manifest';
+import { SampleManifest, OVERLAPPING_SAMPLES, Heuristic } from './data/sample-manifest';
 
 export class App {
   private outputCanvas: HTMLCanvasElement;
@@ -8,11 +8,27 @@ export class App {
   private overlayCtx: CanvasRenderingContext2D;
 
   private model: OverlappingModel | null = null;
+  private currentSample: SampleManifest | null = null;
   private isPlaying = false;
   private animationId: number | null = null;
   private stepDelay = 50;
 
   private showEntropy = false;
+
+  // UI element references
+  private readonly ui = {
+    width: () => document.getElementById('width') as HTMLInputElement,
+    height: () => document.getElementById('height') as HTMLInputElement,
+    patternSize: () => document.getElementById('pattern-size') as HTMLInputElement,
+    symmetry: () => document.getElementById('symmetry') as HTMLSelectElement,
+    periodic: () => document.getElementById('periodic') as HTMLInputElement,
+    periodicInput: () => document.getElementById('periodic-input') as HTMLInputElement,
+    ground: () => document.getElementById('ground') as HTMLInputElement,
+    heuristic: () => document.getElementById('heuristic') as HTMLSelectElement,
+    seed: () => document.getElementById('seed') as HTMLInputElement,
+    sampleSelect: () => document.getElementById('sample-select') as HTMLSelectElement,
+    sampleDescription: () => document.getElementById('sample-description') as HTMLParagraphElement,
+  };
 
   constructor() {
     this.outputCanvas = document.getElementById('output-canvas') as HTMLCanvasElement;
@@ -42,15 +58,21 @@ export class App {
     });
 
     // Sample selector
-    document.getElementById('sample-select')?.addEventListener('change', (e) => {
+    this.ui.sampleSelect()?.addEventListener('change', (e) => {
       const select = e.target as HTMLSelectElement;
-      this.loadSample(select.value);
+      this.selectSample(select.value);
     });
 
     // Random seed button
     document.getElementById('random-seed')?.addEventListener('click', () => {
-      const seedInput = document.getElementById('seed') as HTMLInputElement;
-      seedInput.value = Math.floor(Math.random() * 1000000).toString();
+      this.ui.seed().value = Math.floor(Math.random() * 1000000).toString();
+    });
+
+    // Reset to defaults button
+    document.getElementById('reset-defaults')?.addEventListener('click', () => {
+      if (this.currentSample) {
+        this.populateUIFromSample(this.currentSample);
+      }
     });
 
     // Visualization toggles
@@ -62,7 +84,7 @@ export class App {
   }
 
   private populateSampleSelector(): void {
-    const select = document.getElementById('sample-select') as HTMLSelectElement;
+    const select = this.ui.sampleSelect();
     select.innerHTML = '';
 
     for (const sample of OVERLAPPING_SAMPLES) {
@@ -74,27 +96,95 @@ export class App {
 
     // Load first sample by default
     if (OVERLAPPING_SAMPLES.length > 0) {
-      this.loadSample(OVERLAPPING_SAMPLES[0].name);
+      this.selectSample(OVERLAPPING_SAMPLES[0].name);
     }
   }
 
-  private async loadSample(name: string): Promise<void> {
+  /**
+   * Select a sample and populate UI with its default values
+   */
+  private selectSample(name: string): void {
     const sample = OVERLAPPING_SAMPLES.find(s => s.name === name);
     if (!sample) {
       this.updateStatus(`Sample not found: ${name}`);
       return;
     }
 
-    this.updateStatus(`Loading ${name}...`);
+    this.currentSample = sample;
+    this.populateUIFromSample(sample);
+    this.loadCurrentSample();
+  }
+
+  /**
+   * Populate all UI controls from sample's default values
+   */
+  private populateUIFromSample(sample: SampleManifest): void {
+    // Output size - use sample's suggested size or default 48
+    const size = sample.size ?? 48;
+    this.ui.width().value = size.toString();
+    this.ui.height().value = size.toString();
+
+    // Pattern extraction settings
+    this.ui.patternSize().value = sample.N.toString();
+    this.ui.symmetry().value = sample.symmetry.toString();
+    this.ui.periodicInput().checked = sample.periodicInput;
+    this.ui.ground().checked = sample.ground;
+
+    // Output settings
+    this.ui.periodic().checked = sample.periodic;
+
+    // Algorithm settings
+    this.ui.heuristic().value = sample.heuristic;
+
+    // Update description
+    const descEl = this.ui.sampleDescription();
+    if (descEl) {
+      descEl.textContent = sample.description || '';
+    }
+  }
+
+  /**
+   * Read all parameters from UI controls
+   */
+  private getUIParams(): {
+    width: number;
+    height: number;
+    patternSize: number;
+    symmetry: number;
+    periodic: boolean;
+    periodicInput: boolean;
+    ground: boolean;
+    heuristic: Heuristic;
+    seed: number;
+  } {
+    return {
+      width: parseInt(this.ui.width().value),
+      height: parseInt(this.ui.height().value),
+      patternSize: parseInt(this.ui.patternSize().value),
+      symmetry: parseInt(this.ui.symmetry().value),
+      periodic: this.ui.periodic().checked,
+      periodicInput: this.ui.periodicInput().checked,
+      ground: this.ui.ground().checked,
+      heuristic: this.ui.heuristic().value as Heuristic,
+      seed: parseInt(this.ui.seed().value),
+    };
+  }
+
+  /**
+   * Load the currently selected sample with current UI parameters
+   */
+  private async loadCurrentSample(): Promise<void> {
+    if (!this.currentSample) return;
+
+    const sample = this.currentSample;
+    this.updateStatus(`Loading ${sample.name}...`);
 
     try {
-      // Load sample image (use BASE_URL for correct path with Vite base config)
+      // Load sample image
       const img = await this.loadImage(`${import.meta.env.BASE_URL}samples/${sample.file}`);
-      const width = parseInt((document.getElementById('width') as HTMLInputElement).value);
-      const height = parseInt((document.getElementById('height') as HTMLInputElement).value);
-      const N = parseInt((document.getElementById('pattern-size') as HTMLInputElement).value);
-      const periodic = (document.getElementById('periodic') as HTMLInputElement).checked;
-      const seed = parseInt((document.getElementById('seed') as HTMLInputElement).value);
+
+      // Get parameters from UI
+      const params = this.getUIParams();
 
       // Extract pixel data from image
       const tempCanvas = document.createElement('canvas');
@@ -105,31 +195,32 @@ export class App {
       const imageData = tempCtx.getImageData(0, 0, img.width, img.height);
       const pixels = new Uint32Array(imageData.data.buffer);
 
-      // Create model
+      // Create model with all parameters from UI
       this.model = new OverlappingModel(
         pixels,
         img.width,
         img.height,
         {
-          width,
-          height,
-          patternSize: N,
-          periodic,
-          periodicInput: true,
-          symmetry: sample.symmetry ?? 8,
-          ground: sample.ground ?? false,
-          heuristic: 'entropy',
-          seed
+          width: params.width,
+          height: params.height,
+          patternSize: params.patternSize,
+          periodic: params.periodic,
+          periodicInput: params.periodicInput,
+          symmetry: params.symmetry,
+          ground: params.ground,
+          heuristic: params.heuristic,
+          seed: params.seed,
         }
       );
 
       // Setup canvases
-      this.setupCanvases(width, height);
+      this.setupCanvases(params.width, params.height);
       this.render();
       this.renderOverlay();
-      this.updateStatus(`Loaded ${name} - ${this.model.patternCount} patterns extracted`);
+      this.updateProgress();
+      this.updateStatus(`Loaded ${sample.name} - ${this.model.patternCount} patterns extracted`);
     } catch (err) {
-      this.updateStatus(`Error loading ${name}: ${err}`);
+      this.updateStatus(`Error loading ${sample.name}: ${err}`);
       console.error(err);
     }
   }
@@ -217,25 +308,21 @@ export class App {
           // Color gradient: blue -> cyan -> green -> yellow -> red
           let r: number, g: number, b: number;
           if (t < 0.25) {
-            // Blue to cyan
             const s = t / 0.25;
             r = 0;
             g = Math.floor(255 * s);
             b = 255;
           } else if (t < 0.5) {
-            // Cyan to green
             const s = (t - 0.25) / 0.25;
             r = 0;
             g = 255;
             b = Math.floor(255 * (1 - s));
           } else if (t < 0.75) {
-            // Green to yellow
             const s = (t - 0.5) / 0.25;
             r = Math.floor(255 * s);
             g = 255;
             b = 0;
           } else {
-            // Yellow to red
             const s = (t - 0.75) / 0.25;
             r = 255;
             g = Math.floor(255 * (1 - s));
@@ -245,7 +332,7 @@ export class App {
           data[pixelOffset] = r;
           data[pixelOffset + 1] = g;
           data[pixelOffset + 2] = b;
-          data[pixelOffset + 3] = 180; // Semi-transparent
+          data[pixelOffset + 3] = 180;
         }
       }
     }

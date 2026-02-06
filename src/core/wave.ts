@@ -231,6 +231,56 @@ export class Wave {
     return argmin;
   }
 
+  /**
+   * Find the cell with minimum remaining values (MRV heuristic)
+   * Returns: cell index, or -1 if all collapsed (success), or -2 if contradiction
+   *
+   * MRV uses pattern count instead of entropy - often better for complex patterns
+   */
+  getMRVCell(rng: Random): number {
+    let minCount = Infinity;
+    let argmin = -1;
+
+    for (let i = 0; i < this.size; i++) {
+      const count = this.memo.patternCount[i];
+
+      // Skip already collapsed cells
+      if (count === 1) continue;
+
+      // Contradiction: no patterns possible
+      if (count === 0) return -2;
+
+      // Add small noise to break ties randomly
+      if (count < minCount || (count === minCount && rng.next() < 0.5)) {
+        minCount = count;
+        argmin = i;
+      }
+    }
+
+    return argmin;
+  }
+
+  /**
+   * Find the next uncollapsed cell in scanline order
+   * Returns: cell index, or -1 if all collapsed (success), or -2 if contradiction
+   */
+  getScanlineCell(startFrom: number = 0): { cell: number; nextStart: number } {
+    for (let i = startFrom; i < this.size; i++) {
+      const count = this.memo.patternCount[i];
+
+      // Contradiction: no patterns possible
+      if (count === 0) return { cell: -2, nextStart: i };
+
+      // Found uncollapsed cell
+      if (count > 1) {
+        return { cell: i, nextStart: i + 1 };
+      }
+    }
+
+    // All collapsed (or checked all cells)
+    return { cell: -1, nextStart: this.size };
+  }
+
   /** Check if a cell is fully collapsed (has exactly one pattern) */
   isCollapsed(cellIndex: number): boolean {
     return this.memo.patternCount[cellIndex] === 1;

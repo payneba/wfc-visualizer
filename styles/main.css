@@ -62,6 +62,43 @@ main {
   font-size: 1rem;
   margin-bottom: 0.75rem;
   color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+fieldset {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+fieldset legend {
+  font-size: 0.75rem;
+  color: #888;
+  padding: 0 0.25rem;
+}
+
+.small-btn {
+  padding: 0.25rem 0.5rem;
+  background-color: var(--border-color);
+  border: none;
+  border-radius: 4px;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+
+.small-btn:hover {
+  background-color: var(--accent-color);
+}
+
+.description {
+  font-size: 0.75rem;
+  color: #888;
+  font-style: italic;
+  margin-top: 0.5rem;
 }
 
 .setting {

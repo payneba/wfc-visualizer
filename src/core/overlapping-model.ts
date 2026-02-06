@@ -14,6 +14,7 @@ import {
   ObserveResult,
   WFCState,
   Random,
+  Heuristic,
   DX,
   DY,
 } from './types';
@@ -38,6 +39,12 @@ export class OverlappingModel {
   private readonly periodic: boolean;
   private readonly ground: boolean;
 
+  /** Cell selection heuristic */
+  private readonly heuristic: Heuristic;
+
+  /** Scanline cursor (for scanline heuristic) */
+  private scanlineCursor: number = 0;
+
   /** Number of patterns */
   public readonly patternCount: number;
 
@@ -45,13 +52,14 @@ export class OverlappingModel {
     inputPixels: Uint32Array,
     inputWidth: number,
     inputHeight: number,
-    options: Omit<OverlappingOptions, 'heuristic'> & { heuristic?: string }
+    options: OverlappingOptions
   ) {
     this.N = options.patternSize;
     this.width = options.width;
     this.height = options.height;
     this.periodic = options.periodic;
     this.ground = options.ground ?? false;
+    this.heuristic = options.heuristic ?? 'entropy';
 
     this.rng = new Random(options.seed);
 
@@ -304,8 +312,19 @@ export class OverlappingModel {
    * Perform one step of the algorithm (observe + propagate)
    */
   step(): ObserveResult {
-    // Find cell with minimum entropy
-    const cellIndex = this.wave.getMinEntropyCell(this.rng);
+    // Find cell to collapse based on heuristic
+    let cellIndex: number;
+
+    if (this.heuristic === 'mrv') {
+      cellIndex = this.wave.getMRVCell(this.rng);
+    } else if (this.heuristic === 'scanline') {
+      const result = this.wave.getScanlineCell(this.scanlineCursor);
+      cellIndex = result.cell;
+      this.scanlineCursor = result.nextStart;
+    } else {
+      // Default: entropy heuristic
+      cellIndex = this.wave.getMinEntropyCell(this.rng);
+    }
 
     if (cellIndex === -1) {
       // All cells collapsed - success
@@ -449,6 +468,7 @@ export class OverlappingModel {
   clear(): void {
     this.wave.clear();
     this.propagator.reset();
+    this.scanlineCursor = 0;
 
     // Reapply ground constraint
     if (this.ground) {
