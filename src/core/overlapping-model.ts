@@ -27,6 +27,9 @@ export class OverlappingModel {
   /** Extracted patterns (NxN color indices) */
   private readonly patterns: Uint8Array[];
 
+  /** Pattern weights (frequencies) */
+  private readonly weights: Float64Array;
+
   /** Unique colors found in input */
   private readonly colors: number[];
 
@@ -86,8 +89,8 @@ export class OverlappingModel {
     const propagatorData = this.buildPropagator(patterns);
 
     // Step 4: Initialize wave and propagator
-    const weightsArray = new Float64Array(weights);
-    this.wave = new Wave(this.width, this.height, weightsArray);
+    this.weights = new Float64Array(weights);
+    this.wave = new Wave(this.width, this.height, this.weights);
     this.propagator = new Propagator(
       this.width,
       this.height,
@@ -498,5 +501,22 @@ export class OverlappingModel {
    */
   getLastCollapsedCell(): number {
     return this.wave.getMinEntropyCell(this.rng);
+  }
+
+  /**
+   * Get pattern data for visualization
+   */
+  getPatternData(): {
+    patterns: Uint8Array[];
+    weights: Float64Array;
+    colors: number[];
+    N: number;
+  } {
+    return {
+      patterns: this.patterns,
+      weights: this.weights,
+      colors: this.colors,
+      N: this.N,
+    };
   }
 }

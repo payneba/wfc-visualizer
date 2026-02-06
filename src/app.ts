@@ -81,6 +81,20 @@ export class App {
       this.showEntropy = entropyCheckbox.checked;
       this.renderOverlay();
     });
+
+    // Patterns modal
+    document.getElementById('show-patterns-btn')?.addEventListener('click', () => {
+      this.showPatternsModal();
+    });
+    document.getElementById('close-patterns-btn')?.addEventListener('click', () => {
+      this.hidePatternsModal();
+    });
+    document.getElementById('patterns-modal')?.addEventListener('click', (e) => {
+      // Close when clicking outside the modal content
+      if (e.target === e.currentTarget) {
+        this.hidePatternsModal();
+      }
+    });
   }
 
   private populateSampleSelector(): void {
@@ -460,4 +474,84 @@ export class App {
     }
   }
 
+  private showPatternsModal(): void {
+    if (!this.model) {
+      this.updateStatus('Load a sample first to see patterns');
+      return;
+    }
+
+    const modal = document.getElementById('patterns-modal');
+    const grid = document.getElementById('patterns-grid');
+    const countEl = document.getElementById('pattern-count');
+
+    if (!modal || !grid || !countEl) return;
+
+    // Get pattern data from model
+    const { patterns, weights, colors, N } = this.model.getPatternData();
+
+    // Update count
+    countEl.textContent = `(${patterns.length})`;
+
+    // Clear grid
+    grid.innerHTML = '';
+
+    // Render each pattern
+    const scale = Math.max(1, Math.floor(32 / N)); // Scale to ~32px
+    const size = N * scale;
+
+    for (let i = 0; i < patterns.length; i++) {
+      const pattern = patterns[i];
+      const weight = weights[i];
+
+      // Create container
+      const cell = document.createElement('div');
+      cell.className = 'pattern-cell';
+
+      // Create canvas for pattern
+      const canvas = document.createElement('canvas');
+      canvas.width = N;
+      canvas.height = N;
+      canvas.style.width = `${size}px`;
+      canvas.style.height = `${size}px`;
+
+      const ctx = canvas.getContext('2d')!;
+      const imageData = ctx.createImageData(N, N);
+      const data = imageData.data;
+
+      // Fill pattern pixels
+      for (let y = 0; y < N; y++) {
+        for (let x = 0; x < N; x++) {
+          const colorIndex = pattern[y * N + x];
+          const color = colors[colorIndex];
+          const pixelOffset = (y * N + x) * 4;
+
+          data[pixelOffset] = color & 0xff;           // R
+          data[pixelOffset + 1] = (color >> 8) & 0xff;  // G
+          data[pixelOffset + 2] = (color >> 16) & 0xff; // B
+          data[pixelOffset + 3] = 255;                  // A
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+
+      // Add weight label
+      const weightLabel = document.createElement('span');
+      weightLabel.className = 'pattern-weight';
+      weightLabel.textContent = weight.toString();
+
+      cell.appendChild(canvas);
+      cell.appendChild(weightLabel);
+      grid.appendChild(cell);
+    }
+
+    // Show modal
+    modal.classList.remove('hidden');
+  }
+
+  private hidePatternsModal(): void {
+    const modal = document.getElementById('patterns-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
+  }
 }

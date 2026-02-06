@@ -96,6 +96,7 @@
           <div class="setting">
             <label><input type="checkbox" id="show-entropy"> Entropy heatmap</label>
           </div>
+          <button id="show-patterns-btn" class="small-btn">Show Patterns</button>
         </section>
       </aside>
 
@@ -121,6 +122,17 @@
         <span id="progress"></span>
       </div>
     </footer>
+
+    <!-- Patterns Modal -->
+    <div id="patterns-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Extracted Patterns <span id="pattern-count"></span></h3>
+          <button id="close-patterns-btn" class="icon-btn">&times;</button>
+        </div>
+        <div id="patterns-grid" class="patterns-grid"></div>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="/src/main.ts"></script>
