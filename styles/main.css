@@ -147,6 +147,9 @@ fieldset legend {
 }
 
 .setting {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 0.35rem;
 }
 
@@ -155,15 +158,15 @@ fieldset legend {
 }
 
 .setting label {
-  display: block;
-  margin-bottom: 0.15rem;
   font-size: 0.8rem;
+  white-space: nowrap;
 }
 
 .setting input[type="number"],
 .setting select {
-  width: 100%;
-  padding: 0.35rem 0.5rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.3rem 0.4rem;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
   border-radius: 4px;
@@ -172,25 +175,27 @@ fieldset legend {
 }
 
 .setting input[type="checkbox"] {
-  margin-right: 0.35rem;
+  margin-right: 0.25rem;
 }
 
-.setting-inline {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+/* Icon button (for dice, etc.) */
+.icon-btn {
+  padding: 0.25rem 0.4rem;
+  background-color: var(--border-color);
+  border: none;
+  border-radius: 4px;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 0.9rem;
+  line-height: 1;
 }
 
-.setting-inline label {
-  margin-bottom: 0;
-  white-space: nowrap;
+.icon-btn:hover {
+  background-color: var(--accent-color);
 }
 
-.setting-inline input[type="number"] {
-  width: 70px;
-}
-
-select {
+/* Standalone selects (not in .setting) */
+#sample-selector select {
   width: 100%;
   padding: 0.35rem 0.5rem;
   margin-bottom: 0.35rem;
@@ -201,7 +206,7 @@ select {
   font-size: 0.8rem;
 }
 
-select:last-child {
+#sample-selector select:last-of-type {
   margin-bottom: 0;
 }
 
@@ -286,13 +291,3 @@ footer#controls {
   color: #888;
 }
 
-button#random-seed {
-  margin-left: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  background-color: var(--border-color);
-  border: none;
-  border-radius: 4px;
-  color: var(--text-color);
-  cursor: pointer;
-  font-size: 0.75rem;
-}
