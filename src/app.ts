@@ -28,6 +28,7 @@ export class App {
     seed: () => document.getElementById('seed') as HTMLInputElement,
     sampleSelect: () => document.getElementById('sample-select') as HTMLSelectElement,
     sampleDescription: () => document.getElementById('sample-description') as HTMLParagraphElement,
+    sampleImage: () => document.getElementById('sample-image') as HTMLImageElement,
   };
 
   constructor() {
@@ -140,6 +141,12 @@ export class App {
     const descEl = this.ui.sampleDescription();
     if (descEl) {
       descEl.textContent = sample.description || '';
+    }
+
+    // Update sample image preview
+    const imgEl = this.ui.sampleImage();
+    if (imgEl) {
+      imgEl.src = `${import.meta.env.BASE_URL}samples/${sample.file}`;
     }
   }
 
