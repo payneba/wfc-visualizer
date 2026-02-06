@@ -411,13 +411,8 @@ export class App {
 
   private reset(): void {
     this.pause();
-    if (this.model) {
-      this.model.clear();
-      this.render();
-      this.renderOverlay();
-      this.updateProgress();
-      this.updateStatus('Reset - ready to run');
-    }
+    // Reload model with current UI parameters (not just clear the wave)
+    this.loadCurrentSample();
   }
 
   private updateStatus(text: string): void {
