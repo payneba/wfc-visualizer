@@ -10,6 +10,7 @@ export class App {
   private model: OverlappingModel | null = null;
   private currentSample: SampleManifest | null = null;
   private isPlaying = false;
+  private stopRequested = false;
   private animationId: number | null = null;
   private stepDelay = 50;
 
@@ -48,6 +49,7 @@ export class App {
     // Playback controls
     document.getElementById('play-btn')?.addEventListener('click', () => this.play());
     document.getElementById('pause-btn')?.addEventListener('click', () => this.pause());
+    document.getElementById('stop-btn')?.addEventListener('click', () => this.stop());
     document.getElementById('step-btn')?.addEventListener('click', () => this.step());
 
     // Speed control
@@ -398,35 +400,55 @@ export class App {
 
     if (!this.model) return;
 
+    this.stopRequested = false;
     const animate = (document.getElementById('animate') as HTMLInputElement).checked;
+
+    // Enable stop, disable play
+    document.getElementById('play-btn')!.setAttribute('disabled', 'true');
+    document.getElementById('stop-btn')!.removeAttribute('disabled');
 
     if (animate) {
       // Animated mode - show step by step
       this.isPlaying = true;
-      document.getElementById('play-btn')!.setAttribute('disabled', 'true');
       document.getElementById('pause-btn')!.removeAttribute('disabled');
       this.runLoop();
     } else {
-      // Instant mode - run to completion
-      this.runToCompletion();
+      // Instant mode - run to completion (async so stop can interrupt)
+      await this.runToCompletion();
     }
   }
 
-  private runToCompletion(): void {
+  private async runToCompletion(): Promise<void> {
     if (!this.model) return;
 
+    this.isPlaying = true;
     this.updateStatus('Running...');
 
-    // Run all steps synchronously
+    // Run in batches to keep UI responsive and allow stop
     let result: 'continue' | 'success' | 'failure' = 'continue';
-    while (result === 'continue') {
-      result = this.model.step();
+    while (result === 'continue' && !this.stopRequested) {
+      // Do a batch of steps before yielding
+      for (let i = 0; i < 100 && result === 'continue'; i++) {
+        result = this.model.step();
+      }
+      // Yield to allow UI updates / stop button clicks
+      await new Promise(resolve => setTimeout(resolve, 0));
     }
 
+    this.isPlaying = false;
     this.render();
     this.renderOverlay();
     this.updateProgress();
-    this.updateStatus(result === 'success' ? 'Completed successfully!' : 'Contradiction - no solution found');
+
+    if (this.stopRequested) {
+      this.updateStatus('Stopped');
+    } else {
+      this.updateStatus(result === 'success' ? 'Completed successfully!' : 'Contradiction - no solution found');
+    }
+
+    document.getElementById('play-btn')!.removeAttribute('disabled');
+    document.getElementById('stop-btn')!.setAttribute('disabled', 'true');
+    document.getElementById('pause-btn')!.setAttribute('disabled', 'true');
   }
 
   private pause(): void {
@@ -438,6 +460,16 @@ export class App {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
     }
+  }
+
+  private stop(): void {
+    this.stopRequested = true;
+    this.pause();
+    document.getElementById('stop-btn')!.setAttribute('disabled', 'true');
+    this.render();
+    this.renderOverlay();
+    this.updateProgress();
+    this.updateStatus('Stopped');
   }
 
   private runLoop(): void {
@@ -454,6 +486,7 @@ export class App {
       }, this.stepDelay);
     } else {
       this.pause();
+      document.getElementById('stop-btn')!.setAttribute('disabled', 'true');
       this.updateStatus(result === 'success' ? 'Completed successfully!' : 'Contradiction - no solution found');
     }
   }
