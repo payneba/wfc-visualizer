@@ -149,8 +149,8 @@ export class App {
     const imgEl = this.ui.sampleImage();
     if (imgEl) {
       imgEl.onload = () => {
-        // Scale image to fit preview area (160px) with pixel replication
-        const maxSize = 150;
+        // Scale image to fit preview area (120px) with pixel replication
+        const maxSize = 110;
         const scale = Math.floor(maxSize / Math.max(imgEl.naturalWidth, imgEl.naturalHeight));
         const finalScale = Math.max(1, scale); // At least 1x
         imgEl.style.width = `${imgEl.naturalWidth * finalScale}px`;

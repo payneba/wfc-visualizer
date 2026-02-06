@@ -32,81 +32,76 @@
 
           <fieldset>
             <legend>Output</legend>
-            <div class="setting">
-              <label for="width">Width:</label>
-              <input type="number" id="width" value="48" min="8" max="128">
+            <div class="setting-row">
+              <div class="setting">
+                <label for="width">Width:</label>
+                <input type="number" id="width" value="48" min="8" max="128">
+              </div>
+              <div class="setting">
+                <label for="height">Height:</label>
+                <input type="number" id="height" value="48" min="8" max="128">
+              </div>
             </div>
             <div class="setting">
-              <label for="height">Height:</label>
-              <input type="number" id="height" value="48" min="8" max="128">
-            </div>
-            <div class="setting">
-              <label for="periodic">
-                <input type="checkbox" id="periodic">
-                Periodic Output
-              </label>
+              <label><input type="checkbox" id="periodic"> Periodic</label>
             </div>
           </fieldset>
 
           <fieldset>
             <legend>Pattern Extraction</legend>
-            <div class="setting">
-              <label for="pattern-size">N (pattern size):</label>
-              <input type="number" id="pattern-size" value="3" min="2" max="5">
+            <div class="setting-row">
+              <div class="setting">
+                <label for="pattern-size">N:</label>
+                <input type="number" id="pattern-size" value="3" min="2" max="5">
+              </div>
+              <div class="setting">
+                <label for="symmetry">Symmetry:</label>
+                <select id="symmetry">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="8" selected>8</option>
+                </select>
+              </div>
             </div>
-            <div class="setting">
-              <label for="symmetry">Symmetry:</label>
-              <select id="symmetry">
-                <option value="1">1 (none)</option>
-                <option value="2">2 (reflect)</option>
-                <option value="8" selected>8 (all)</option>
-              </select>
-            </div>
-            <div class="setting">
-              <label for="periodic-input">
-                <input type="checkbox" id="periodic-input" checked>
-                Periodic Input
-              </label>
-            </div>
-            <div class="setting">
-              <label for="ground">
-                <input type="checkbox" id="ground">
-                Ground Constraint
-              </label>
+            <div class="checkbox-row">
+              <div class="setting">
+                <label><input type="checkbox" id="periodic-input" checked> Periodic Input</label>
+              </div>
+              <div class="setting">
+                <label><input type="checkbox" id="ground"> Ground</label>
+              </div>
             </div>
           </fieldset>
 
           <fieldset>
             <legend>Algorithm</legend>
-            <div class="setting">
-              <label for="heuristic">Heuristic:</label>
-              <select id="heuristic">
-                <option value="entropy" selected>Entropy</option>
-                <option value="mrv">MRV (Min Remaining Values)</option>
-                <option value="scanline">Scanline</option>
-              </select>
+            <div class="setting-row">
+              <div class="setting">
+                <label for="heuristic">Heuristic:</label>
+                <select id="heuristic">
+                  <option value="entropy" selected>Entropy</option>
+                  <option value="mrv">MRV</option>
+                  <option value="scanline">Scanline</option>
+                </select>
+              </div>
+              <div class="setting">
+                <label for="seed">Seed:</label>
+                <input type="number" id="seed" value="0">
+              </div>
             </div>
-            <div class="setting">
-              <label for="seed">Seed:</label>
-              <input type="number" id="seed" value="0">
-              <button id="random-seed" class="small-btn">Random</button>
-            </div>
+            <button id="random-seed" class="small-btn">Random Seed</button>
           </fieldset>
         </section>
 
         <section id="visualization-options">
           <h2>Visualization</h2>
-          <div class="setting">
-            <label for="show-entropy">
-              <input type="checkbox" id="show-entropy">
-              Show Entropy Heatmap
-            </label>
-          </div>
-          <div class="setting">
-            <label for="show-propagation">
-              <input type="checkbox" id="show-propagation">
-              Show Propagation
-            </label>
+          <div class="checkbox-row">
+            <div class="setting">
+              <label><input type="checkbox" id="show-entropy"> Entropy</label>
+            </div>
+            <div class="setting">
+              <label><input type="checkbox" id="show-propagation"> Propagation</label>
+            </div>
           </div>
         </section>
       </aside>
