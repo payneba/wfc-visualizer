@@ -34,39 +34,7 @@ Produces a static site in `dist/` that can be deployed to any static host.
 
 The Vite config sets `base: '/wfc-visualizer/'`, which works when the GitHub repo is named `wfc-visualizer`. If using a different repo name, update `base` in `vite.config.ts` to match.
 
-Add `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy to GitHub Pages
-on:
-  push:
-    branches: [main]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - run: npm install
-        working-directory: wfc-visualizer
-      - run: npm run build
-        working-directory: wfc-visualizer
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: wfc-visualizer/dist
-      - id: deployment
-        uses: actions/deploy-pages@v4
-```
-
-Then enable GitHub Pages in repo Settings with source set to "GitHub Actions".
+A GitHub Actions workflow is included at `.github/workflows/deploy.yml`. To enable it, go to repo Settings > Pages and set the source to "GitHub Actions".
 
 ## Architecture
 
