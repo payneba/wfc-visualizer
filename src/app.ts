@@ -12,7 +12,6 @@ export class App {
   private isPlaying = false;
   private animationId: number | null = null;
   private stepDelay = 50;
-  private modelStarted = false;  // Track if model has begun running
 
   private showEntropy = false;
 
@@ -50,7 +49,6 @@ export class App {
     document.getElementById('play-btn')?.addEventListener('click', () => this.play());
     document.getElementById('pause-btn')?.addEventListener('click', () => this.pause());
     document.getElementById('step-btn')?.addEventListener('click', () => this.step());
-    document.getElementById('reset-btn')?.addEventListener('click', () => this.reset());
 
     // Speed control
     const speedSlider = document.getElementById('speed') as HTMLInputElement;
@@ -234,7 +232,6 @@ export class App {
       this.render();
       this.renderOverlay();
       this.updateProgress();
-      this.modelStarted = false;  // Model ready but not yet running
       this.updateStatus(`Loaded ${sample.name} - ${this.model.patternCount} patterns extracted`);
     } catch (err) {
       this.updateStatus(`Error loading ${sample.name}: ${err}`);
@@ -360,11 +357,8 @@ export class App {
   private async play(): Promise<void> {
     if (this.isPlaying) return;
 
-    // Reload model with current UI params before first run
-    if (!this.modelStarted) {
-      await this.loadCurrentSample();
-      this.modelStarted = true;
-    }
+    // Always reload model with current UI params to start fresh
+    await this.loadCurrentSample();
 
     if (!this.model) return;
 
@@ -404,13 +398,7 @@ export class App {
     }
   }
 
-  private async step(): Promise<void> {
-    // Reload model with current UI params before first run
-    if (!this.modelStarted) {
-      await this.loadCurrentSample();
-      this.modelStarted = true;
-    }
-
+  private step(): void {
     if (!this.model) return;
 
     const result = this.model.step();
@@ -421,12 +409,6 @@ export class App {
     if (result !== 'continue') {
       this.updateStatus(result === 'success' ? 'Completed successfully!' : 'Contradiction - no solution found');
     }
-  }
-
-  private reset(): void {
-    this.pause();
-    // Reload model with current UI parameters (not just clear the wave)
-    this.loadCurrentSample();
   }
 
   private updateStatus(text: string): void {
