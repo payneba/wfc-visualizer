@@ -260,8 +260,8 @@ export class App {
     this.overlayCanvas.width = width;
     this.overlayCanvas.height = height;
 
-    // Scale up for display (8x for small outputs)
-    const scale = Math.min(8, Math.floor(600 / Math.max(width, height)));
+    // Scale up for display - target ~800px for the larger dimension
+    const scale = Math.min(12, Math.floor(800 / Math.max(width, height)));
     const displayWidth = width * scale;
     const displayHeight = height * scale;
 
