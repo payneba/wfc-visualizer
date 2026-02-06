@@ -40,6 +40,7 @@ export class App {
   }
 
   init(): void {
+    this.applyTheme();
     this.setupEventListeners();
     this.populateSampleSelector();
     this.updateStatus('Ready - select a sample to begin');
@@ -95,6 +96,17 @@ export class App {
     entropyCheckbox?.addEventListener('change', () => {
       this.showEntropy = entropyCheckbox.checked;
       this.renderOverlay();
+    });
+
+    // Theme toggle
+    document.getElementById('theme-toggle')?.addEventListener('click', () => {
+      const html = document.documentElement;
+      const current = html.dataset.theme;
+      const next = current === 'light' ? 'dark' : 'light';
+      html.dataset.theme = next;
+      localStorage.setItem('theme', next);
+      const btn = document.getElementById('theme-toggle')!;
+      btn.textContent = next === 'light' ? '\u2600\uFE0F' : '\uD83C\uDF19';
     });
 
     // Patterns modal
@@ -605,6 +617,16 @@ export class App {
     const modal = document.getElementById('patterns-modal');
     if (modal && !modal.classList.contains('hidden')) {
       this.showPatternsModal();
+    }
+  }
+
+  private applyTheme(): void {
+    const saved = localStorage.getItem('theme');
+    const theme = saved === 'light' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = theme;
+    const btn = document.getElementById('theme-toggle');
+    if (btn) {
+      btn.textContent = theme === 'light' ? '\u2600\uFE0F' : '\uD83C\uDF19';
     }
   }
 }
