@@ -12,6 +12,7 @@ export class App {
   private isPlaying = false;
   private animationId: number | null = null;
   private stepDelay = 50;
+  private modelStarted = false;  // Track if model has begun running
 
   private showEntropy = false;
 
@@ -235,6 +236,7 @@ export class App {
       this.renderOverlay();
       this.updateProgress();
       this.updateParamsDisplay(params, sample.name);
+      this.modelStarted = false;  // Model ready but not yet running
       this.updateStatus(`Loaded ${sample.name} - ${this.model.patternCount} patterns extracted`);
     } catch (err) {
       this.updateStatus(`Error loading ${sample.name}: ${err}`);
@@ -357,8 +359,16 @@ export class App {
     this.overlayCtx.putImageData(imageData, 0, 0);
   }
 
-  private play(): void {
-    if (!this.model || this.isPlaying) return;
+  private async play(): Promise<void> {
+    if (this.isPlaying) return;
+
+    // Reload model with current UI params before first run
+    if (!this.modelStarted) {
+      await this.loadCurrentSample();
+      this.modelStarted = true;
+    }
+
+    if (!this.model) return;
 
     this.isPlaying = true;
     document.getElementById('play-btn')!.setAttribute('disabled', 'true');
@@ -396,7 +406,13 @@ export class App {
     }
   }
 
-  private step(): void {
+  private async step(): Promise<void> {
+    // Reload model with current UI params before first run
+    if (!this.modelStarted) {
+      await this.loadCurrentSample();
+      this.modelStarted = true;
+    }
+
     if (!this.model) return;
 
     const result = this.model.step();
