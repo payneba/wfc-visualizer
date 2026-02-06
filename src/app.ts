@@ -30,7 +30,6 @@ export class App {
     sampleSelect: () => document.getElementById('sample-select') as HTMLSelectElement,
     sampleDescription: () => document.getElementById('sample-description') as HTMLParagraphElement,
     sampleImage: () => document.getElementById('sample-image') as HTMLImageElement,
-    paramsDisplay: () => document.getElementById('params-display') as HTMLDivElement,
   };
 
   constructor() {
@@ -235,7 +234,6 @@ export class App {
       this.render();
       this.renderOverlay();
       this.updateProgress();
-      this.updateParamsDisplay(params, sample.name, this.model.patternCount);
       this.modelStarted = false;  // Model ready but not yet running
       this.updateStatus(`Loaded ${sample.name} - ${this.model.patternCount} patterns extracted`);
     } catch (err) {
@@ -447,29 +445,4 @@ export class App {
     }
   }
 
-  private updateParamsDisplay(params: ReturnType<typeof this.getUIParams>, sampleName: string, patternCount?: number): void {
-    const el = this.ui.paramsDisplay();
-    if (!el) return;
-
-    const p = (label: string, value: string | number | boolean) => {
-      const v = typeof value === 'boolean' ? (value ? 'Y' : 'N') : value;
-      return `<span><span class="param-label">${label}:</span><span class="param-value">${v}</span></span>`;
-    };
-
-    const items = [
-      p('sample', sampleName),
-      p('size', `${params.width}x${params.height}`),
-      p('N', params.patternSize),
-      p('sym', params.symmetry),
-      p('periodic', params.periodic),
-      p('pInput', params.periodicInput),
-      p('ground', params.ground),
-      p('heur', params.heuristic),
-      p('seed', params.seed),
-    ];
-    if (patternCount !== undefined) {
-      items.push(p('patterns', patternCount));
-    }
-    el.innerHTML = items.join('');
-  }
 }

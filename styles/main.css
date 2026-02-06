@@ -272,24 +272,6 @@ footer#controls {
   width: 150px;
 }
 
-#params-display {
-  font-size: 0.75rem;
-  color: #888;
-  font-family: monospace;
-}
-
-#params-display span {
-  margin-right: 1rem;
-}
-
-#params-display .param-label {
-  color: #666;
-}
-
-#params-display .param-value {
-  color: var(--text-color);
-}
-
 #status {
   margin-left: auto;
   font-size: 0.875rem;
