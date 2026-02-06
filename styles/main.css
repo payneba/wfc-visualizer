@@ -348,11 +348,12 @@ footer#controls {
 
 .patterns-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 12px;
   padding: 1rem;
   overflow-y: auto;
   max-height: calc(90vh - 60px);
+  min-width: 600px;
 }
 
 .pattern-cell {

@@ -509,7 +509,7 @@ export class App {
     grid.innerHTML = '';
 
     // Render each pattern
-    const scale = Math.max(1, Math.floor(32 / N)); // Scale to ~32px
+    const scale = Math.max(1, Math.floor(64 / N)); // Scale to ~64px
     const size = N * scale;
 
     for (let i = 0; i < patterns.length; i++) {
