@@ -267,14 +267,21 @@ footer#controls {
   opacity: 0.8;
 }
 
-#speed-control {
+#animation-control {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 0.8rem;
 }
 
-#speed-control input[type="range"] {
-  width: 150px;
+#animation-control label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+#animation-control input[type="range"] {
+  width: 100px;
 }
 
 #status {

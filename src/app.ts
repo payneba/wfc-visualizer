@@ -371,11 +371,35 @@ export class App {
 
     if (!this.model) return;
 
-    this.isPlaying = true;
-    document.getElementById('play-btn')!.setAttribute('disabled', 'true');
-    document.getElementById('pause-btn')!.removeAttribute('disabled');
+    const animate = (document.getElementById('animate') as HTMLInputElement).checked;
 
-    this.runLoop();
+    if (animate) {
+      // Animated mode - show step by step
+      this.isPlaying = true;
+      document.getElementById('play-btn')!.setAttribute('disabled', 'true');
+      document.getElementById('pause-btn')!.removeAttribute('disabled');
+      this.runLoop();
+    } else {
+      // Instant mode - run to completion
+      this.runToCompletion();
+    }
+  }
+
+  private runToCompletion(): void {
+    if (!this.model) return;
+
+    this.updateStatus('Running...');
+
+    // Run all steps synchronously
+    let result: 'continue' | 'success' | 'failure' = 'continue';
+    while (result === 'continue') {
+      result = this.model.step();
+    }
+
+    this.render();
+    this.renderOverlay();
+    this.updateProgress();
+    this.updateStatus(result === 'success' ? 'Completed successfully!' : 'Contradiction - no solution found');
   }
 
   private pause(): void {
