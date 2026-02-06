@@ -357,8 +357,17 @@ export class App {
   private async play(): Promise<void> {
     if (this.isPlaying) return;
 
-    // Always reload model with current UI params to start fresh
-    await this.loadCurrentSample();
+    // Check if model needs to be reset (finished or no model yet)
+    if (!this.model) {
+      await this.loadCurrentSample();
+    } else {
+      const state = this.model.getState();
+      if (state.isComplete || state.hasContradiction) {
+        // Previous run finished - start fresh
+        await this.loadCurrentSample();
+      }
+      // Otherwise resume from paused state
+    }
 
     if (!this.model) return;
 
