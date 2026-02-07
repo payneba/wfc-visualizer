@@ -61,7 +61,6 @@ export class App {
     // Playback controls
     document.getElementById('play-btn')?.addEventListener('click', () => this.play());
     document.getElementById('pause-btn')?.addEventListener('click', () => this.pause());
-    document.getElementById('stop-btn')?.addEventListener('click', () => this.stop());
     document.getElementById('step-btn')?.addEventListener('click', () => this.step());
 
     // Speed control
@@ -538,11 +537,10 @@ export class App {
     const animate = (document.getElementById('animate') as HTMLInputElement).checked;
 
     document.getElementById('play-btn')!.setAttribute('disabled', 'true');
-    document.getElementById('stop-btn')!.removeAttribute('disabled');
+    document.getElementById('pause-btn')!.removeAttribute('disabled');
 
     if (animate) {
       this.isPlaying = true;
-      document.getElementById('pause-btn')!.removeAttribute('disabled');
       this.runLoop();
     } else {
       await this.runToCompletion();
@@ -575,11 +573,11 @@ export class App {
     }
 
     document.getElementById('play-btn')!.removeAttribute('disabled');
-    document.getElementById('stop-btn')!.setAttribute('disabled', 'true');
     document.getElementById('pause-btn')!.setAttribute('disabled', 'true');
   }
 
   private pause(): void {
+    this.stopRequested = true;
     this.isPlaying = false;
     document.getElementById('pause-btn')!.setAttribute('disabled', 'true');
     document.getElementById('play-btn')!.removeAttribute('disabled');
@@ -588,16 +586,6 @@ export class App {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
     }
-  }
-
-  private stop(): void {
-    this.stopRequested = true;
-    this.pause();
-    document.getElementById('stop-btn')!.setAttribute('disabled', 'true');
-    this.render();
-    this.renderOverlay();
-    this.updateProgress();
-    this.updateStatus('Stopped');
   }
 
   private runLoop(): void {
@@ -614,7 +602,6 @@ export class App {
       }, this.stepDelay);
     } else {
       this.pause();
-      document.getElementById('stop-btn')!.setAttribute('disabled', 'true');
       this.updateStatus(result === 'success' ? 'Completed successfully!' : 'Contradiction - no solution found');
     }
   }
