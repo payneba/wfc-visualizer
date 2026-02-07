@@ -1,3 +1,5 @@
+import { marked } from 'marked';
+import helpMarkdown from './docs/help.md?raw';
 import { OverlappingModel } from './core/overlapping-model';
 import { SimpleTiledModel } from './core/simple-tiled-model';
 import { loadTileset } from './core/tileset-loader';
@@ -23,6 +25,7 @@ export class App {
   private stepDelay = 50;
 
   private showEntropy = false;
+  private helpRendered = false;
 
   // UI element references
   private readonly ui = {
@@ -176,6 +179,19 @@ export class App {
     document.getElementById('patterns-modal')?.addEventListener('click', (e) => {
       if (e.target === e.currentTarget) {
         this.hidePatternsModal();
+      }
+    });
+
+    // Help modal
+    document.getElementById('help-btn')?.addEventListener('click', () => {
+      this.showHelpModal();
+    });
+    document.getElementById('close-help-btn')?.addEventListener('click', () => {
+      this.hideHelpModal();
+    });
+    document.getElementById('help-modal')?.addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        this.hideHelpModal();
       }
     });
   }
@@ -895,6 +911,28 @@ export class App {
 
   private hidePatternsModal(): void {
     const modal = document.getElementById('patterns-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
+  }
+
+  private showHelpModal(): void {
+    const modal = document.getElementById('help-modal');
+    if (!modal) return;
+
+    if (!this.helpRendered) {
+      const body = document.getElementById('help-body');
+      if (body) {
+        body.innerHTML = marked.parse(helpMarkdown) as string;
+      }
+      this.helpRendered = true;
+    }
+
+    modal.classList.remove('hidden');
+  }
+
+  private hideHelpModal(): void {
+    const modal = document.getElementById('help-modal');
     if (modal) {
       modal.classList.add('hidden');
     }

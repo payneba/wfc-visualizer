@@ -10,7 +10,10 @@
   <div id="app">
     <header>
       <h1>WFC Visualizer</h1>
-      <button id="theme-toggle" class="icon-btn" title="Toggle light/dark theme">🌙</button>
+      <div class="header-buttons">
+        <button id="help-btn" class="icon-btn" title="Help">?</button>
+        <button id="theme-toggle" class="icon-btn" title="Toggle light/dark theme">🌙</button>
+      </div>
     </header>
 
     <main>
@@ -139,6 +142,17 @@
           <button id="close-patterns-btn" class="icon-btn">&times;</button>
         </div>
         <div id="patterns-grid" class="patterns-grid"></div>
+      </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal hidden">
+      <div class="modal-content help-modal-content">
+        <div class="modal-header">
+          <h3>Help</h3>
+          <button id="close-help-btn" class="icon-btn">&times;</button>
+        </div>
+        <div id="help-body" class="help-body"></div>
       </div>
     </div>
   </div>
