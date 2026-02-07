@@ -165,6 +165,21 @@ fieldset legend {
   border: 1px solid var(--image-border-color);
 }
 
+#custom-upload {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+#custom-filename {
+  font-size: 0.75rem;
+  color: #888;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .setting {
   display: flex;
   align-items: center;

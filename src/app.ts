@@ -16,6 +16,7 @@ export class App {
   private currentSample: SampleManifest | null = null;
   private currentTileset: TilesetManifest | null = null;
   private currentTilesize: number = 1;
+  private customImage: HTMLImageElement | null = null;
   private isPlaying = false;
   private stopRequested = false;
   private animationId: number | null = null;
@@ -109,7 +110,7 @@ export class App {
 
     // Pattern extraction settings - reload model when changed (overlapping only)
     const reloadOnChange = () => {
-      if (this.modelType === 'overlapping' && this.currentSample) {
+      if (this.modelType === 'overlapping' && (this.currentSample || this.customImage)) {
         this.loadCurrentSample().then(() => {
           this.refreshPatternsModalIfOpen();
         });
@@ -137,6 +138,34 @@ export class App {
       btn.textContent = next === 'light' ? '\u2600\uFE0F' : '\uD83C\uDF19';
     });
 
+    // Custom image upload
+    document.getElementById('choose-image-btn')?.addEventListener('click', () => {
+      (document.getElementById('custom-image-input') as HTMLInputElement)?.click();
+    });
+    document.getElementById('custom-image-input')?.addEventListener('change', (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) this.handleCustomImageFile(file);
+    });
+
+    // Drag-drop on sample preview
+    const previewEl = this.ui.samplePreview();
+    if (previewEl) {
+      previewEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer!.dropEffect = 'copy';
+      });
+      previewEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const file = e.dataTransfer?.files[0];
+        if (file && file.type.startsWith('image/')) {
+          // Switch to custom image mode if not already
+          this.ui.sampleSelect().value = '__custom__';
+          this.selectSample('__custom__');
+          this.handleCustomImageFile(file);
+        }
+      });
+    }
+
     // Patterns modal
     document.getElementById('show-patterns-btn')?.addEventListener('click', () => {
       this.showPatternsModal();
@@ -160,9 +189,12 @@ export class App {
     const samplePreview = this.ui.samplePreview();
     const showPatternsBtn = document.getElementById('show-patterns-btn');
 
+    const customUpload = document.getElementById('custom-upload');
+
     if (this.modelType === 'simpletiled') {
       patternExtraction?.classList.add('hidden');
       samplePreview?.classList.add('hidden');
+      customUpload?.classList.add('hidden');
       if (showPatternsBtn) showPatternsBtn.textContent = 'Show Tiles';
     } else {
       patternExtraction?.classList.remove('hidden');
@@ -177,6 +209,12 @@ export class App {
     select.innerHTML = '';
 
     if (this.modelType === 'overlapping') {
+      // Add custom image option first
+      const customOpt = document.createElement('option');
+      customOpt.value = '__custom__';
+      customOpt.textContent = 'Custom Image...';
+      select.appendChild(customOpt);
+
       for (const sample of OVERLAPPING_SAMPLES) {
         const option = document.createElement('option');
         option.value = sample.name;
@@ -184,6 +222,7 @@ export class App {
         select.appendChild(option);
       }
       if (OVERLAPPING_SAMPLES.length > 0) {
+        select.value = OVERLAPPING_SAMPLES[0].name;
         this.selectSample(OVERLAPPING_SAMPLES[0].name);
       }
     } else {
@@ -203,6 +242,28 @@ export class App {
    * Select a sample/tileset and populate UI with its default values
    */
   private selectSample(name: string): void {
+    const customUpload = document.getElementById('custom-upload');
+
+    if (this.modelType === 'overlapping' && name === '__custom__') {
+      this.currentSample = null;
+      this.currentTileset = null;
+      this.model = null;
+      customUpload?.classList.remove('hidden');
+      this.ui.sampleImage().style.display = 'none';
+      this.ui.sampleDescription().textContent = '';
+      if (this.customImage) {
+        this.showCustomImagePreview();
+        this.loadCurrentSample();
+      } else {
+        this.updateStatus('Choose an image to use as WFC input');
+      }
+      return;
+    }
+
+    // Hide custom upload UI when selecting a built-in sample
+    customUpload?.classList.add('hidden');
+    this.ui.sampleImage().style.display = '';
+
     if (this.modelType === 'overlapping') {
       const sample = OVERLAPPING_SAMPLES.find(s => s.name === name);
       if (!sample) {
@@ -320,9 +381,80 @@ export class App {
    */
   private async loadCurrentSample(): Promise<void> {
     if (this.modelType === 'overlapping') {
-      await this.loadOverlappingSample();
+      if (this.currentSample) {
+        await this.loadOverlappingSample();
+      } else if (this.customImage) {
+        await this.loadCustomOverlappingSample();
+      }
     } else {
       await this.loadTiledSample();
+    }
+  }
+
+  private handleCustomImageFile(file: File): void {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      this.customImage = img;
+      this.showCustomImagePreview();
+      document.getElementById('custom-filename')!.textContent = file.name;
+      this.loadCurrentSample();
+    };
+    img.onerror = () => {
+      this.updateStatus(`Failed to load image: ${file.name}`);
+    };
+    img.src = url;
+  }
+
+  private showCustomImagePreview(): void {
+    if (!this.customImage) return;
+    const imgEl = this.ui.sampleImage();
+    imgEl.style.display = '';
+    const maxSize = 110;
+    const scale = Math.max(1, Math.floor(maxSize / Math.max(this.customImage.naturalWidth, this.customImage.naturalHeight)));
+    imgEl.style.width = `${this.customImage.naturalWidth * scale}px`;
+    imgEl.style.height = `${this.customImage.naturalHeight * scale}px`;
+    imgEl.src = this.customImage.src;
+  }
+
+  private async loadCustomOverlappingSample(): Promise<void> {
+    if (!this.customImage) return;
+
+    this.updateStatus('Loading custom image...');
+
+    try {
+      const img = this.customImage;
+      const params = this.getUIParams();
+
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = img.width;
+      tempCanvas.height = img.height;
+      const tempCtx = tempCanvas.getContext('2d')!;
+      tempCtx.drawImage(img, 0, 0);
+      const imageData = tempCtx.getImageData(0, 0, img.width, img.height);
+      const pixels = new Uint32Array(imageData.data.buffer);
+
+      this.model = new OverlappingModel(pixels, img.width, img.height, {
+        width: params.width,
+        height: params.height,
+        patternSize: params.patternSize,
+        periodic: params.periodic,
+        periodicInput: params.periodicInput,
+        symmetry: params.symmetry,
+        ground: params.ground,
+        heuristic: params.heuristic,
+        seed: params.seed,
+      });
+
+      this.currentTilesize = 1;
+      this.setupCanvases(params.width, params.height);
+      this.render();
+      this.renderOverlay();
+      this.updateProgress();
+      this.updateStatus(`Custom image loaded - ${this.model.patternCount} patterns extracted`);
+    } catch (err) {
+      this.updateStatus(`Error loading custom image: ${err}`);
+      console.error(err);
     }
   }
 
