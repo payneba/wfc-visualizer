@@ -2,7 +2,7 @@
 
 ## What is Wave Function Collapse?
 
-Wave Function Collapse (WFC) is a constraint-based procedural generation algorithm created by [Maxim Gumin](https://github.com/mxgmn/WaveFunctionCollapse). It takes a small input example and generates a larger output that is locally similar to the input.
+Wave Function Collapse (WFC) is a constraint-based procedural generation algorithm created by [Maxim Gumin](https://github.com/mxgmn/WaveFunctionCollapse). It takes a small input example and generates a larger output that is locally similar to the input. This app lets you see the WFC algorithm in action, either running it step-by-step or all in one go. You can apply the algorithm to the standard samples supplied by the original author, or to another bitmap you provide, and can tweak the various settings to see how this affects the results.
 
 The algorithm works by:
 
