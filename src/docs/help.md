@@ -23,7 +23,7 @@ The overlapping model extracts NxN pixel patterns from the input image and uses 
 - **N** (Pattern Size) — Size of the patterns to extract (2-5). Larger N captures more structure but is slower and needs more variety in the input.
 - **Symmetry** — How many symmetry transformations to apply when extracting patterns:
   - **1** — No transformations (use patterns as-is)
-  - **2** — Add 180-degree rotation
+  - **2** — Add horizontal reflection
   - **8** — Add all rotations and reflections (most variety)
 - **Periodic input** — Whether the input image wraps around (tiles seamlessly). Enable for seamless textures.
 - **Ground** — Constrains the bottom row of the output to use patterns found at the bottom of the input. Useful for landscapes or anything with a distinct ground.
