@@ -191,10 +191,13 @@ export class App {
 
     const customUpload = document.getElementById('custom-upload');
 
+    const dimensionsEl = document.getElementById('sample-dimensions');
+
     if (this.modelType === 'simpletiled') {
       patternExtraction?.classList.add('hidden');
       samplePreview?.classList.add('hidden');
       customUpload?.classList.add('hidden');
+      if (dimensionsEl) dimensionsEl.textContent = '';
       if (showPatternsBtn) showPatternsBtn.textContent = 'Show Tiles';
     } else {
       patternExtraction?.classList.remove('hidden');
@@ -314,6 +317,7 @@ export class App {
         const finalScale = Math.max(1, scale);
         imgEl.style.width = `${imgEl.naturalWidth * finalScale}px`;
         imgEl.style.height = `${imgEl.naturalHeight * finalScale}px`;
+        this.updateDimensions(imgEl.naturalWidth, imgEl.naturalHeight);
       };
       imgEl.src = `${import.meta.env.BASE_URL}samples/${sample.file}`;
     }
@@ -415,6 +419,7 @@ export class App {
     imgEl.style.width = `${this.customImage.naturalWidth * scale}px`;
     imgEl.style.height = `${this.customImage.naturalHeight * scale}px`;
     imgEl.src = this.customImage.src;
+    this.updateDimensions(this.customImage.naturalWidth, this.customImage.naturalHeight);
   }
 
   private async loadCustomOverlappingSample(): Promise<void> {
@@ -754,6 +759,11 @@ export class App {
   private updateStatus(text: string): void {
     const statusEl = document.getElementById('status-text');
     if (statusEl) statusEl.textContent = text;
+  }
+
+  private updateDimensions(w: number, h: number): void {
+    const el = document.getElementById('sample-dimensions');
+    if (el) el.textContent = `${w} × ${h}`;
   }
 
   private updateProgress(): void {
